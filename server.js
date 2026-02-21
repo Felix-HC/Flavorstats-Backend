@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import getUsers from "./flavortown/getUsers.js";
 
 dotenv.config();
 
@@ -17,6 +18,14 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.get("/", (req, res) => { res.status(200).send("Server running!"); });
+app.get("/search", (req, res) => {
+    const query = req.query.query;
+    if (query) {
+        getUsers(query, res);
+    } else {
+        res.status(422).send({"error": "Missing 'query' parameter"});
+    }
+});
 
 app.listen(port, () => {
     console.log(`Express server running on port ${port}`);
