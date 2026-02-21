@@ -12,6 +12,7 @@ export default async function getUsers(query, res) {
         const response = await axios.get(`${process.env.FLAVORTOWN_API_URL}/users?query=${query}`, config);
         res.status(200).send(response.data.users);
     } catch (error) {
-        return error;
+        console.error(error);
+        res.status(500).send({error: "Internal Server Error"});
     }
 }
