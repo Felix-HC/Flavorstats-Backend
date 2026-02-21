@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import getUsers from "./flavortown/getUsers.js";
+import getStats from "./flavortown/getStats.js";
 
 dotenv.config();
 
@@ -26,6 +27,14 @@ app.get("/search", (req, res) => {
         res.status(422).send({"error": "Missing 'query' parameter"});
     }
 });
+app.get("/stats", (req, res) => {
+    const userID = req.query.user;
+    if (userID) {
+        getStats(userID, res);
+    } else {
+        res.status(422).send({error: "Missing 'user' parameter"});
+    }
+})
 
 app.listen(port, () => {
     console.log(`Express server running on port ${port}`);
