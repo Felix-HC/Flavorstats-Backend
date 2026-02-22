@@ -52,9 +52,10 @@ async function getProjects(projectIDs) {
         const projectObject = {};
         projectObject.title = projectEndpoint.data.title;
         projectObject.description = projectEndpoint.data.description;
+        projectObject.creationDate = projectEndpoint.data.created_at;
         projectObject.shipped = projectEndpoint.data.ship_status === "draft" ? false : true;
         projectObject.usedAI = projectEndpoint.data.ai_declaration !== null && projectEndpoint.data.ai_declaration !== "" ? true : false;
-        
+
         projectObject.devlogs = await getDevlogStats(projectID);
 
         projectsArray.push(projectObject);
@@ -75,7 +76,6 @@ async function getDevlogStats(projectID) {
 
     const devlogsArray = devlogEndpoint.data.devlogs;
 
-    
     devlogsArray.forEach((devlog) => {
         totalLikes += devlog.likes_count || 0;
         totalComments += devlog.comments_count || 0;
