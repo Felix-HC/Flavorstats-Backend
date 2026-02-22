@@ -13,12 +13,32 @@ const countWords = (arr) => {
     return newString.split(/\s+/).length;
 }
 
+const getMostUsedWord = (arr) => {
+    const mostUsedWords = [];
+    const frequencyMap = new Map();
+
+    arr.forEach((word) => {
+        frequencyMap.set(word, frequencyMap.get(word) + 1 || 0 + 1);
+    });
+
+    const sortedWordArrayMap = [...frequencyMap.entries()].sort((prev, current) => {
+        return current[1] - prev[1];
+    });
+
+    for (let i = 0; i < 10; i++) {
+        mostUsedWords.push(sortedWordArrayMap[i]);
+    }
+
+    return mostUsedWords;
+}
+
 const config = {
     headers: { Authorization: `Bearer ${process.env.FLAVORTOWN_API_KEY}` }
 };
 
 export default async function getStats(userID, res) {
     const userObject = {};
+    let allDevlogContent = [];
 
     try {
         // Get general information about user
@@ -33,7 +53,10 @@ export default async function getStats(userID, res) {
 
         // Get project information
         const projectIDs = userEndpoint.data.project_ids;
-        userObject.projects = await getProjects(projectIDs);
+        userObject.projects = await getProjects(projectIDs, allDevlogContent);
+
+        // Get most used word
+        userObject.mostUsedWords = getMostUsedWord(allDevlogContent);
 
         // Return Object
         res.status(200).send(userObject);
@@ -43,7 +66,7 @@ export default async function getStats(userID, res) {
     }
 }
 
-async function getProjects(projectIDs) {
+async function getProjects(projectIDs, allDevlogContent) {
     const projectsArray = [];
 
     for (const projectID of projectIDs) {
@@ -56,7 +79,7 @@ async function getProjects(projectIDs) {
         projectObject.shipped = projectEndpoint.data.ship_status === "draft" ? false : true;
         projectObject.usedAI = projectEndpoint.data.ai_declaration !== null && projectEndpoint.data.ai_declaration !== "" ? true : false;
 
-        projectObject.devlogs = await getDevlogStats(projectID);
+        projectObject.devlogs = await getDevlogStats(projectID, allDevlogContent);
 
         projectsArray.push(projectObject);
     }
@@ -64,7 +87,7 @@ async function getProjects(projectIDs) {
     return projectsArray;
 }
 
-async function getDevlogStats(projectID) {
+async function getDevlogStats(projectID, allDevlogContent) {
     const devlogEndpoint = await axios.get(`${process.env.FLAVORTOWN_API_URL}/projects/${projectID}/devlogs`, config);
 
     const devlogsObject = {};
@@ -95,6 +118,12 @@ async function getDevlogStats(projectID) {
     devlogsObject.totalWords = countWords(contents);
 
     devlogsObject.dates = dates;
+    
+    // Append all words from devlog to "allDevlogContent" var so I can count words later on
+    const allContentString = contents.reduce((total, current) => {
+        return total + " " + current;
+    }, "");
+    allDevlogContent.push(...allContentString.toLowerCase().split(/\s+/));
 
     return devlogsObject;
 }
