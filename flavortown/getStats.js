@@ -103,7 +103,7 @@ async function getDevlogStats(projectID, allDevlogContent) {
         totalLikes += devlog.likes_count || 0;
         totalComments += devlog.comments_count || 0;
         contents.push(devlog.body);
-        dates.push(devlog.created_at);
+        dates.push({date: devlog.created_at, timeLogged: devlog.duration_seconds});
         durationsSeconds.push(devlog.duration_seconds);
     });
 
