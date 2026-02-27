@@ -1,5 +1,6 @@
 import axios from "axios";
 import dotenv from "dotenv";
+import { toBase64 } from "../utils.js";
 
 dotenv.config();
 
@@ -43,9 +44,10 @@ export default async function getStats(userID, res) {
     try {
         // Get general information about user
         const userEndpoint = await axios.get(`${process.env.FLAVORTOWN_API_URL}/users/${userID}`, config);
-
+        const avatarBase64 = await toBase64(userEndpoint.data.avatar);
+        
         userObject.displayName = userEndpoint.data.display_name;
-        userObject.avatar = userEndpoint.data.avatar;
+        userObject.avatar = `data:${avatarBase64.contentType};base64,${avatarBase64.base64}`;
         userObject.voteCount = userEndpoint.data.vote_count;
         userObject.likeCount = userEndpoint.data.like_count;
         userObject.totalTimeSeconds = userEndpoint.data.devlog_seconds_total;
